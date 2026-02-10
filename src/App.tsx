@@ -10,21 +10,25 @@ import AboutPage from "./pages/AboutPage";
 import MarketPricePage from "./pages/MarketPricePage";
 import VerificationPage from "./pages/VerificationPage";
 import NotFound from "./pages/NotFound";
+import { AuthProvider } from "./context/auth-context";
+
 const App = () => (
   <TooltipProvider>
     <Toaster />
     <Sonner />
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Website />} />
-        <Route path="/app" element={<Home />} />
-        <Route path="/categories" element={<CategoriesPage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/market-prices" element={<MarketPricePage />} />
-        <Route path="/verification" element={<VerificationPage />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Website />} />
+          <Route path="/app" element={<Home />} />
+          <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/market-prices" element={<MarketPricePage />} />
+          <Route path="/verification" element={<VerificationPage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   </TooltipProvider>
 );
 export default App;

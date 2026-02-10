@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { RoleSelection } from "@/components/ui/role-selection"
@@ -8,35 +8,43 @@ import { CustomerModule } from "@/components/ui/customer-module"
 import { NavigationBar } from "@/components/ui/navigation-bar"
 import { ArrowLeft, Sparkles } from "lucide-react"
 import heroImage from "@/assets/hero-agrilink.jpg"
+import { useAuth } from "@/context/auth-context"
+import { useNavigate } from "react-router-dom"
 
-type UserRole = "farmer" | "customer" | null
 type ActiveTab = "home" | "location" | "profile"
 type HomeView = "welcome" | "categories" | "dashboard"
 
 export default function Home() {
-  const [userRole, setUserRole] = useState<UserRole>(null)
+  const { user, userRole, loading } = useAuth()
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<ActiveTab>("home")
   const [homeView, setHomeView] = useState<HomeView>("welcome")
 
-  const handleRoleSelect = (role: UserRole) => {
-    setUserRole(role)
-    setHomeView("categories")
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/")
+    } else if (!loading && user && userRole) {
+      // If user is logged in, default to dashboard or categories appropriately
+      // For now, let's just ensure they can access the modules
+      if (homeView === 'welcome') {
+        setHomeView('categories')
+      }
+    }
+  }, [user, loading, navigate, userRole, homeView])
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
   }
 
   const handleTabChange = (tab: ActiveTab) => {
     setActiveTab(tab)
     if (tab === "home") {
-      setHomeView(userRole ? "categories" : "welcome")
+      setHomeView(user ? "categories" : "welcome")
     }
   }
 
   const handleCategorySelect = () => {
     setHomeView("dashboard")
-  }
-
-  const handleBackToWelcome = () => {
-    setUserRole(null)
-    setHomeView("welcome")
   }
 
   const handleBackToCategories = () => {
@@ -237,67 +245,8 @@ export default function Home() {
     // Home tab content
     switch (homeView) {
       case "welcome":
-        return (
-          <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/5">
-            {/* Hero Section */}
-            <div className="relative overflow-hidden">
-              <div
-                className="h-80 bg-cover bg-center relative"
-                style={{ backgroundImage: `url(${heroImage})` }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/50 to-transparent" />
-                <div className="glass absolute inset-x-4 bottom-4 rounded-2xl p-6 text-center">
-                  <div className="fade-slide-up">
-                    <h1 className="text-4xl font-bold gradient-text mb-3 tracking-tight">
-                      AgriLink
-                    </h1>
-                    <p className="text-muted-foreground text-lg font-medium">
-                      Farm Fresh • Directly to You • Traceable
-                    </p>
-                    <div className="flex items-center justify-center mt-3 space-x-2">
-                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                      <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
-                      <div className="w-2 h-2 bg-accent rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="pb-20 px-4">
-              <div className="max-w-2xl mx-auto">
-                <div className="text-center mb-8 fade-slide-up" style={{ animationDelay: '0.3s' }}>
-                  <h2 className="text-2xl font-bold mb-2 flex items-center justify-center">
-                    <Sparkles className="w-6 h-6 text-primary mr-2 heartbeat" />
-                    Choose Your Journey
-                    <Sparkles className="w-6 h-6 text-primary ml-2 heartbeat" />
-                  </h2>
-                  <p className="text-muted-foreground">Connect directly with nature's bounty</p>
-                </div>
-
-                <RoleSelection onRoleSelect={handleRoleSelect} />
-
-                <div className="mt-12 grid grid-cols-3 gap-4 fade-slide-up" style={{ animationDelay: '0.6s' }}>
-                  <div className="text-center">
-                    <div className="text-3xl mb-2 float">🌱</div>
-                    <p className="text-sm font-medium">Fresh</p>
-                    <p className="text-xs text-muted-foreground">Daily harvest</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl mb-2 float" style={{ animationDelay: '0.5s' }}>🤝</div>
-                    <p className="text-sm font-medium">Direct</p>
-                    <p className="text-xs text-muted-foreground">No middlemen</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl mb-2 float" style={{ animationDelay: '1s' }}>✅</div>
-                    <p className="text-sm font-medium">Verified</p>
-                    <p className="text-xs text-muted-foreground">Quality assured</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )
+        // Should not happen if redirected, but as fallback
+        return null
 
       case "categories":
         return (
@@ -308,7 +257,7 @@ export default function Home() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleBackToWelcome}
+                  onClick={() => navigate("/")}
                   className="fade-slide-left"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
