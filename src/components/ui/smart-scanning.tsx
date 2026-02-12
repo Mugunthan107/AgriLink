@@ -34,27 +34,30 @@ export function SmartScanning() {
     setIsCameraOpen(false)
   }
 
+  useEffect(() => {
+    return () => {
+      stopCamera()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isCameraOpen && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current
+    }
+  }, [isCameraOpen])
+
   const startCamera = async () => {
     try {
       setScanResult(null)
       setCapturedImage(null)
       const stream = await navigator.mediaDevices.getUserMedia({ video: true })
       streamRef.current = stream
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-      }
       setIsCameraOpen(true)
     } catch (err) {
       console.error("Error accessing camera:", err)
       toast.error("Could not access camera. Please ensure you have granted permission.")
     }
   }
-
-  useEffect(() => {
-    return () => {
-      stopCamera()
-    }
-  }, [])
 
   const captureAndScan = () => {
     if (videoRef.current && canvasRef.current) {
